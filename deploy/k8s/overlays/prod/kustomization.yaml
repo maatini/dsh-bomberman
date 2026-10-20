@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: bomber-grid
+
+resources:
+  - namespace.yaml
+  - ../../base
+  - ingress.yaml
+
+images:
+  # Replace the registry and tag for your environment:
+  #   kustomize edit set image bomber-grid=ghcr.io/acme/bomber-grid:1.2.3
+  - name: bomber-grid
+    newName: ghcr.io/example/bomber-grid
+    newTag: 1.0.0
+
+labels:
+  - pairs:
+      app.kubernetes.io/environment: production
+    includeSelectors: false
+
+# Keep replicas at 1: room state is held in process memory. See
+# deploy/k8s/README.md before attempting horizontal scaling.
+replicas:
+  - name: bomber-grid
+    count: 1

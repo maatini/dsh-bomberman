@@ -1,0 +1,19 @@
+# Build output
+/bin/
+/dist/
+
+# Local Go cache used when the user cache dir is not writable
+/.gocache/
+
+# Local state / editor files
+.DS_Store
+*.log
+*.out
+.env
+.env.local
+.idea/
+.vscode/
+
+# Test and coverage output
+coverage.txt
+coverage.html

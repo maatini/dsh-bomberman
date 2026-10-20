@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: bomber-grid
+
+resources:
+  - namespace.yaml
+  - ../../base
+
+images:
+  - name: bomber-grid
+    newName: bomber-grid
+    newTag: dev
+
+labels:
+  - pairs:
+      app.kubernetes.io/environment: local
+    includeSelectors: false
+
+patches:
+  # NodePort makes the game reachable in kind/minikube/docker-desktop without
+  # an ingress controller. Port-forwarding the ClusterIP service also works.
+  - target:
+      kind: Service
+      name: bomber-grid
+    patch: |-
+      - op: replace
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30431

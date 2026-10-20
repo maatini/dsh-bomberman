@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: bomber-grid-config
+    literals:
+      - BM_ADDR=0.0.0.0:4301
+      - BM_LOG_LEVEL=info
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: bomber-grid
+      app.kubernetes.io/part-of: bomber-grid
+      app.kubernetes.io/managed-by: kustomize
+    includeSelectors: false

@@ -1,0 +1,57 @@
+min_version = "2025.1.0"
+
+[tools]
+# Latest stable Go release available through mise at the time of writing.
+go = "1.27.2"
+
+[tasks.dev]
+description = "Start the Bomber Grid server with the configured Go toolchain"
+run = "go run ./cmd/server"
+
+[tasks.build]
+description = "Build a production binary into ./bin"
+run = "go build -trimpath -ldflags='-s -w' -o bin/bomber-grid ./cmd/server"
+
+[tasks.test]
+description = "Run all unit and integration tests"
+run = "go test ./..."
+
+[tasks."test:race"]
+description = "Run all tests with the race detector"
+run = "go test -race ./..."
+
+[tasks.vet]
+description = "Run go vet"
+run = "go vet ./..."
+
+[tasks.fmt]
+description = "Format all Go sources"
+run = "gofmt -w cmd internal web"
+
+[tasks."fmt:check"]
+description = "Fail if any Go source is not formatted"
+run = "files=$(gofmt -l cmd internal web); if [ -n \"$files\" ]; then echo \"Unformatted files:\"; echo \"$files\"; exit 1; fi"
+
+[tasks.check]
+description = "Format check, vet and test"
+depends = ["fmt:check", "vet", "test"]
+
+[tasks.clean]
+description = "Remove build artifacts"
+run = "rm -rf bin"
+
+[tasks.image]
+description = "Build the local container image bomber-grid:dev"
+run = "docker build --build-arg VERSION=dev -t bomber-grid:dev ."
+
+[tasks."k8s:render"]
+description = "Render the local Kustomize overlay"
+run = "kubectl kustomize deploy/k8s/overlays/local"
+
+[tasks."k8s:apply"]
+description = "Apply the local Kustomize overlay to the current cluster"
+run = "kubectl apply -k deploy/k8s/overlays/local"
+
+[tasks."k8s:delete"]
+description = "Delete the local Kustomize resources"
+run = "kubectl delete -k deploy/k8s/overlays/local --ignore-not-found"

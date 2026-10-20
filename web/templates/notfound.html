@@ -1,0 +1,14 @@
+{{template "head" .}}
+<header class="site-header">
+  {{template "brand" .}}
+  <a class="btn btn-ghost btn-small" href="/">← Startseite</a>
+</header>
+<main id="main" class="center-stage">
+  <section class="error-card">
+    <span class="error-code">{{.Code}}</span>
+    <h1>Bombe daneben.</h1>
+    <p>{{.Message}}</p>
+    <a class="btn btn-primary" href="/">Zur Startseite</a>
+  </section>
+</main>
+{{template "foot" .}}

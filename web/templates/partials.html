@@ -1,0 +1,350 @@
+{{define "screen"}}
+  {{if eq .Phase "lobby"}}
+    {{template "lobby-screen" .}}
+  {{else}}
+    {{template "game-screen" .}}
+  {{end}}
+{{end}}
+
+{{define "lobby-screen"}}
+<div class="lobby-screen">
+  <section class="lobby-card">
+    <header class="lobby-card-head">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-dot"></span> LOBBY</p>
+        <h1>{{.Name}}</h1>
+        <p class="lobby-subtitle">Sammle deine Crew oder fülle freie Plätze mit Bots. Ab zwei Spieler:innen kann der Host starten.</p>
+      </div>
+      <div class="lobby-code" aria-label="Raumcode {{.Code}}">
+        <span>CODE</span>
+        <strong>{{.Code}}</strong>
+      </div>
+    </header>
+
+    <div class="lobby-meta">
+      <span class="meta-pill"><span class="live-dot"></span> {{.ConnectedPlayers}} bereit</span>
+      <span class="meta-pill">{{.PlayerCount}} / {{.MaxPlayers}} Plätze</span>
+      {{if .IsSpectator}}<span class="meta-pill meta-pill-warn">Zuschauer:in</span>{{end}}
+      {{if .IsHost}}<span class="meta-pill meta-pill-accent">Du bist Host</span>{{end}}
+      {{if gt .BotCount 0}}<span class="meta-pill meta-pill-bot">{{.BotCount}} Bot{{if gt .BotCount 1}}s{{end}}</span>{{end}}
+    </div>
+
+    <div class="lobby-roster" aria-label="Spielerliste">
+      {{range .Players}}
+      <div class="roster-row {{if not .Connected}}is-offline{{end}}" style="--player-color: {{.Color}}">
+        <span class="roster-avatar">{{.Initial}}</span>
+        <div class="roster-info">
+          <strong>{{.Name}}{{if .IsYou}} <span class="you-chip">DU</span>{{end}}{{if .IsBot}} <span class="bot-chip">BOT</span>{{end}}</strong>
+          <span class="roster-state">
+            {{if .IsHost}}<span class="host-crown" title="Host">♛ Host</span>{{end}}
+            {{if .IsBot}}<span class="bot-label">Bot · immer bereit</span>{{else if .Connected}}<span class="online-label">online</span>{{else}}<span class="offline-label">offline</span>{{end}}
+          </span>
+        </div>
+        <span class="slot-index">P{{if eq .Slot 0}}1{{else if eq .Slot 1}}2{{else if eq .Slot 2}}3{{else}}4{{end}}</span>
+      </div>
+      {{end}}
+    </div>
+
+    {{if .Spectators}}
+    <div class="spectator-strip">
+      <span>Zuschauer:innen</span>
+      {{range .Spectators}}<span class="spectator-chip" style="--player-color: {{.Color}}">{{.Initial}} {{.Name}}</span>{{end}}
+    </div>
+    {{end}}
+
+    <footer class="lobby-footer">
+      {{if .IsSpectator}}
+        <div class="waiting-note">
+          <strong>Zuschauer-Modus</strong>
+          Du siehst die Runde, kannst aber nicht mitspielen oder starten.
+        </div>
+      {{else if .IsHost}}
+        <form method="post" action="/room/{{.Code}}/start?p={{.Token}}"
+              hx-post="/room/{{.Code}}/start?p={{.Token}}" hx-swap="none"
+              hx-disabled-elt="find button">
+          <button class="btn btn-primary btn-wide" type="submit" {{if not .CanStart}}disabled{{end}}>
+            {{if .CanStart}}Runde starten <span aria-hidden="true">→</span>{{else}}Warte auf Mitspieler:innen{{end}}
+          </button>
+        </form>
+        <p class="lobby-hint">{{.StartHint}}</p>
+        <div class="bot-controls">
+          <div class="bot-controls-head">
+            <span>Bots</span>
+            <span class="bot-count">{{.BotCount}} im Raum</span>
+          </div>
+          <div class="bot-buttons">
+            <form method="post" action="/room/{{.Code}}/bots?p={{.Token}}&amp;op=add"
+                  hx-post="/room/{{.Code}}/bots?p={{.Token}}&amp;op=add" hx-swap="none"
+                  hx-disabled-elt="find button">
+              <button class="btn btn-secondary btn-small" type="submit" {{if not .CanAddBot}}disabled{{end}}>+ Bot</button>
+            </form>
+            <form method="post" action="/room/{{.Code}}/bots?p={{.Token}}&amp;op=remove"
+                  hx-post="/room/{{.Code}}/bots?p={{.Token}}&amp;op=remove" hx-swap="none"
+                  hx-disabled-elt="find button">
+              <button class="btn btn-ghost btn-small" type="submit" {{if not .CanRemoveBot}}disabled{{end}}>− Bot</button>
+            </form>
+          </div>
+          <p class="microcopy">Bots spielen sofort mit – ideal für eine Solo-Runde oder zum Auffüllen.</p>
+        </div>
+      {{else}}
+        <div class="waiting-note">
+          <span class="waiting-pulse" aria-hidden="true"></span>
+          <strong>Warte auf den Host</strong>
+          Der Host startet die Runde, sobald genug Spieler:innen bereit sind – Bots zählen mit.
+        </div>
+      {{end}}
+    </footer>
+  </section>
+
+  <aside class="lobby-side">
+    <section class="info-card">
+      <h2>Steuerung</h2>
+      <dl class="key-list">
+        <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Bewegen</dd></div>
+        <div><dt><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></dt><dd>Bewegen</dd></div>
+        <div><dt><kbd>Space</kbd> / <kbd>E</kbd></dt><dd>Bombe legen</dd></div>
+        <div><dt><kbd>X</kbd></dt><dd>Zünden (Fernzünder)</dd></div>
+      </dl>
+    </section>
+    <section class="info-card">
+      <h2>Im Feld</h2>
+      <ul class="legend-list">
+        <li><span class="legend-swatch swatch-solid"></span> Unzerstörbare Wand</li>
+        <li><span class="legend-swatch swatch-brick"></span> Zerstörbarer Block</li>
+        <li><span class="legend-swatch swatch-bomb"></span> Bombe · 3 s Zünder</li>
+        <li><span class="legend-swatch swatch-power"></span> Power-up nach Zerstörung</li>
+      </ul>
+      <p class="microcopy">Du startest mit 3 Leben und respawnst nach einem Treffer in deiner Ecke. Nach 120 Sekunden bricht Sudden Death an: Die Außenwände fallen und Bomben regnen vom Himmel.</p>
+    </section>
+  </aside>
+</div>
+{{end}}
+
+{{define "game-screen"}}
+{{if .Game}}
+{{$g := .Game}}
+<div class="game-screen" data-tick="{{$g.Tick}}"
+     data-finished="{{$g.Finished}}" data-draw="{{$g.Draw}}"
+     data-winner-id="{{$g.WinnerID}}" data-you-id="{{.Token}}"
+     data-sudden="{{$g.SuddenDeath}}"
+     data-spectator="{{.IsSpectator}}">
+  <section class="arena-column" aria-label="Spielfeld">
+    <div class="arena-toolbar">
+      <div class="arena-toolbar-left">
+        <span class="phase-chip {{if .Game.Finished}}is-finished{{else}}is-live{{end}}">
+          {{if .Game.Finished}}Beendet{{else}}<span class="live-dot"></span> Live{{end}}
+        </span>
+        <span class="arena-room">{{.Name}}</span>
+        {{if .IsSpectator}}<span class="spectator-tag">Zuschauer</span>{{end}}
+        {{if .Game.SuddenDeath}}
+        <span class="sudden-badge" role="status"><span class="sudden-dot" aria-hidden="true"></span> Sudden Death</span>
+        {{else if and .Game.Started (not .Game.Finished)}}
+        <span class="match-clock" title="Zeit bis Sudden Death">⚠ {{.Game.SuddenDeathIn}} s</span>
+        {{end}}
+      </div>
+      <div class="arena-toolbar-right">
+        <span>{{.Game.ElapsedSeconds}} s</span>
+        <span class="arena-tick">Tick {{.Game.Tick}}</span>
+      </div>
+    </div>
+
+    <div class="board-shell">
+      <div id="game-board" class="game-board"
+           style="--cols: {{.Game.Width}}; --rows: {{.Game.Height}};"
+           aria-label="Bomberman-Spielfeld {{.Game.Width}} mal {{.Game.Height}}">
+        {{range $y, $row := .Game.Cells}}
+          {{range $x, $cell := $row}}
+          <div class="cell {{$cell.Class}}" data-x="{{$x}}" data-y="{{$y}}">
+            {{if $cell.PowerUp}}
+            <span class="powerup powerup-{{$cell.PowerUp.String}}" title="{{$cell.PowerUp.Label}}" aria-label="{{$cell.PowerUp.Label}}">{{$cell.PowerUp.Symbol}}</span>
+            {{end}}
+          </div>
+          {{end}}
+        {{end}}
+
+        {{range $g.Bombs}}
+        <div id="{{.ID}}" class="bomb" style="left: {{pct .X $g.Width}}%; top: {{pct .Y $g.Height}}%;" aria-label="Bombe">
+          <span class="bomb-core"></span><span class="bomb-fuse"></span>
+        </div>
+        {{end}}
+
+        {{range $g.Players}}
+        <div id="player-{{.ID}}"
+             class="player {{if not .Alive}}is-down{{end}} {{if .Eliminated}}is-out{{end}} {{if .Invulnerable}}is-invulnerable{{end}} {{if .IsYou}}is-you{{end}} {{if .IsBot}}is-bot{{end}}"
+             style="left: {{pct .X $g.Width}}%; top: {{pct .Y $g.Height}}%; --player-color: {{.Color}};"
+             data-player-id="{{.ID}}" data-lives="{{.Lives}}"
+             data-max-bombs="{{.MaxBombs}}" data-range="{{.BombRange}}" data-speed="{{.SpeedLevel}}"
+             data-kick="{{.Kick}}" data-remote="{{.Remote}}" data-shield="{{.Shield}}"
+             aria-label="{{.Name}}">
+          <span class="player-token">{{initial .Name}}</span>
+          <span class="player-label">{{.Name}}{{if .IsYou}} · du{{end}}</span>
+        </div>
+        {{end}}
+
+        {{if gt .Game.Countdown 0}}
+        <div class="board-overlay countdown-overlay" aria-live="polite">
+          <span class="overlay-kicker">BEREIT?</span>
+          <strong class="countdown-number">{{.Game.CountdownSeconds}}</strong>
+          <span class="overlay-sub">Letzter überlebt.</span>
+        </div>
+        {{else if .Game.Finished}}
+        <div class="board-overlay result-overlay" aria-live="polite">
+          <span class="overlay-kicker">RUNDE BEENDET</span>
+          {{if .Game.Draw}}
+            <strong class="result-title">Unentschieden</strong>
+            <span class="overlay-sub">Alle sind ausgeschieden.</span>
+          {{else}}
+            <strong class="result-title">{{.Game.WinnerName}} gewinnt!</strong>
+            <span class="overlay-sub">Letzter Überlebender im Grid.</span>
+          {{end}}
+        </div>
+        {{end}}
+      </div>
+
+      {{if .Game.SuddenDeath}}
+      <div class="sudden-strip" role="status">
+        <span class="sudden-strip-title">SUDDEN DEATH</span>
+        <span class="sudden-strip-sub">Außenwände gefallen · Bombenregen</span>
+      </div>
+      {{end}}
+
+      <div class="board-caption">
+        <span>Server-Tick: 20 Hz</span>
+        <span>Render: 15 Hz · HTMX OOB + Morph</span>
+      </div>
+    </div>
+
+    <div class="mobile-pad" aria-label="Touch-Steuerung">
+      <div class="dpad">
+        <button type="button" class="pad-btn pad-up" data-dir="up" aria-label="Hoch">↑</button>
+        <button type="button" class="pad-btn pad-left" data-dir="left" aria-label="Links">←</button>
+        <button type="button" class="pad-btn pad-down" data-dir="down" aria-label="Runter">↓</button>
+        <button type="button" class="pad-btn pad-right" data-dir="right" aria-label="Rechts">→</button>
+      </div>
+      <div class="pad-actions">
+        <button type="button" class="detonate-btn" data-action="detonate" aria-label="Bombe zünden">ZÜND</button>
+        <button type="button" class="bomb-btn" data-action="bomb" aria-label="Bombe legen">BOMBE</button>
+      </div>
+    </div>
+
+    {{if .IsSpectator}}
+      <div class="notice notice-info you-out">
+        <strong>Zuschauer-Modus.</strong> Du beobachtest diese Runde. Nach dem Rundenende kann der Host ein Rematch starten.
+      </div>
+    {{end}}
+    {{range .Game.Players}}
+      {{if and .IsYou .Eliminated}}
+      <div class="notice notice-warn you-out">
+        <strong>Du bist ausgeschieden.</strong> Die Runde läuft weiter – du kannst zuschauen oder auf ein Rematch warten.
+      </div>
+      {{end}}
+    {{end}}
+  </section>
+
+  <aside class="game-sidebar">
+    <section class="score-card">
+      <header class="side-head">
+        <h2>Spieler</h2>
+        <span>{{.ConnectedPlayers}} aktiv</span>
+      </header>
+      <div class="score-list">
+        {{range .Game.Players}}
+        <div class="score-row {{if .IsYou}}is-you{{end}} {{if .Eliminated}}is-out{{end}} {{if .IsBot}}is-bot{{end}}" style="--player-color: {{.Color}}">
+          <span class="score-avatar">{{initial .Name}}</span>
+          <div class="score-main">
+            <div class="score-name">
+              {{.Name}}{{if .IsYou}} <span class="you-chip">DU</span>{{end}}{{if .IsBot}} <span class="bot-chip">BOT</span>{{end}}
+            </div>
+            <div class="score-lives">
+              {{if .Eliminated}}
+                <span class="out-label">AUS</span>
+              {{else}}
+                {{range seq .Lives}}<span class="heart" aria-hidden="true"></span>{{end}}
+                <span class="sr-only">{{.Lives}} Leben</span>
+                {{if .Respawning}}<span class="respawn-label">Respawn…</span>{{end}}
+                {{if .Shield}}<span class="flag-label flag-shield" title="Schild aktiv">⛨ Schild</span>{{end}}
+              {{end}}
+            </div>
+          </div>
+          <div class="score-stats" aria-label="Bomben, Reichweite, Tempo, Extras">
+            <span title="Maximale Bomben">◉ {{.MaxBombs}}</span>
+            <span title="Explosionsreichweite">↔ {{.BombRange}}</span>
+            <span title="Tempostufe">» {{.SpeedLevel}}</span>
+            {{if .Kick}}<span class="flag" title="Kick: Bomben wegtreten">⊣</span>{{end}}
+            {{if .Remote}}<span class="flag" title="Fernzünder: Bomben manuell sprengen">✹</span>{{end}}
+          </div>
+        </div>
+        {{end}}
+      </div>
+    </section>
+
+    <section class="side-card">
+      <header class="side-head"><h2>Runde</h2><span>{{.PhaseText}}</span></header>
+      <div class="round-summary">
+        <div><span>Format</span><strong>{{.Game.Width}} × {{.Game.Height}}</strong></div>
+        <div><span>Leben</span><strong>3 pro Spieler:in</strong></div>
+        <div><span>Zünder</span><strong>3 Sekunden</strong></div>
+        <div><span>Sudden Death</span><strong>{{if .Game.SuddenDeath}}läuft{{else if .Game.Finished}}–{{else}}in {{.Game.SuddenDeathIn}} s{{end}}</strong></div>
+      </div>
+      {{if .CanRematch}}
+      <form method="post" action="/room/{{.Code}}/rematch?p={{.Token}}"
+            hx-post="/room/{{.Code}}/rematch?p={{.Token}}" hx-swap="none"
+            hx-disabled-elt="find button">
+        <button class="btn btn-primary btn-wide" type="submit">Nochmal spielen <span aria-hidden="true">↻</span></button>
+      </form>
+      {{else if .Game.Finished}}
+        <p class="side-note">Nur der Host kann ein Rematch starten. Mindestens zwei Spieler:innen (Bots zählen mit) werden benötigt.</p>
+      {{end}}
+    </section>
+
+    <section class="side-card side-card-controls">
+      <header class="side-head"><h2>Steuerung</h2><span>Keyboard</span></header>
+      <dl class="key-list compact">
+        <div><dt><kbd>WASD</kbd> / <kbd>Pfeile</kbd></dt><dd>Bewegen</dd></div>
+        <div><dt><kbd>Space</kbd> / <kbd>E</kbd></dt><dd>Bombe</dd></div>
+        <div><dt><kbd>X</kbd></dt><dd>Zünden (Fernzünder)</dd></div>
+        <div><dt><kbd>M</kbd></dt><dd>Ton an/aus</dd></div>
+      </dl>
+      <p class="microcopy">Power-ups: <strong>+</strong> Extrabombe, <strong>↔</strong> Reichweite, <strong>»</strong> Tempo, <strong>⊣</strong> Kick, <strong>✹</strong> Fernzünder, <strong>⛨</strong> Schild.</p>
+    </section>
+  </aside>
+</div>
+{{else}}
+<div class="center-stage">
+  <section class="error-card">
+    <h1>Spieldaten fehlen</h1>
+    <p>Der Server hat noch keinen Spielzustand geliefert. Bitte lade die Seite neu.</p>
+  </section>
+</div>
+{{end}}
+{{end}}
+
+{{define "chatlog-inner"}}
+  {{if not .Chat}}
+    <p class="chat-empty">Noch keine Nachrichten. Sag Hallo und koordiniere deine Bomber:innen.</p>
+  {{end}}
+  {{range .Chat}}
+    {{if .System}}
+    <div class="chat-line chat-system"><span>{{.Text}}</span></div>
+    {{else}}
+    <div class="chat-line">
+      <span class="chat-time">{{.Clock}}</span>
+      <span class="chat-author" style="--player-color: {{.Color}}">{{.Author}}</span>
+      <span class="chat-text">{{.Text}}</span>
+    </div>
+    {{end}}
+  {{end}}
+{{end}}
+
+{{define "form-error"}}
+<div class="form-error" role="alert">{{.Message}}</div>
+{{end}}
+
+{{define "toast"}}
+<div id="toast" hx-swap-oob="innerHTML"><div class="toast-content">{{.Message}}</div></div>
+{{end}}
+
+{{define "live"}}
+<div id="screen" hx-swap-oob="morph:#screen" data-phase="{{.Phase}}">{{template "screen" .}}</div>
+<div id="chat-log" hx-swap-oob="morph:#chat-log">{{template "chatlog-inner" .}}</div>
+{{end}}

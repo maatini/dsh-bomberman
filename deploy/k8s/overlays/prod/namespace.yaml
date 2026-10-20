@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bomber-grid
+  labels:
+    app.kubernetes.io/name: bomber-grid
+    app.kubernetes.io/part-of: bomber-grid

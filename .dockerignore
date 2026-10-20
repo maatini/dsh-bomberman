@@ -1,0 +1,14 @@
+.git
+.gitignore
+.github
+.idea
+.vscode
+.DS_Store
+bin
+dist
+.gocache
+coverage.txt
+coverage.html
+deploy
+*.log
+*.out

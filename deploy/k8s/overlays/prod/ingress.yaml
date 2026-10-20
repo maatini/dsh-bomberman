@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bomber-grid
+  labels:
+    app.kubernetes.io/name: bomber-grid
+    app.kubernetes.io/component: server
+  annotations:
+    # nginx-ingress: WebSocket upgrades and the 15 Hz HTML stream need long
+    # timeouts and no response buffering.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - bomber-grid.example.com
+      secretName: bomber-grid-tls
+  rules:
+    - host: bomber-grid.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bomber-grid
+                port:
+                  name: http

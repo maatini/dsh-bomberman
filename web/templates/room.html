@@ -1,0 +1,59 @@
+{{template "head" .}}
+<header class="site-header room-header">
+  {{template "brand" .}}
+  <div class="room-header-tools">
+    <span class="room-code-pill">Raum <strong>{{.Code}}</strong></span>
+    <button class="btn btn-ghost btn-small" type="button" id="copy-link"
+            data-copy="{{.ShareURL}}" aria-label="Einladungslink kopieren">
+      Link kopieren
+    </button>
+    <button class="btn btn-ghost btn-small sound-toggle" type="button" id="sound-toggle"
+            aria-pressed="true" title="Ton ausschalten (M)">
+      <span class="sound-glyph" aria-hidden="true">♪</span>
+      <span class="sound-label">Ton an</span>
+    </button>
+    <span id="connection-badge" class="conn-badge is-connecting" data-state="connecting" role="status" aria-live="polite">
+      <span class="conn-dot" aria-hidden="true"></span><span class="conn-text">Verbinde…</span>
+    </span>
+  </div>
+</header>
+
+<main id="main" class="room-main">
+  <div id="ws-root" hx-ext="ws, morph"
+       ws-connect="{{.WSURL}}">
+    <div id="screen" data-phase="{{.Phase}}">
+      {{template "screen" .}}
+    </div>
+
+    <section class="chat-panel" aria-label="Raum-Chat">
+      <header class="chat-head">
+        <div>
+          <span class="chat-kicker">FUNK</span>
+          <h2>Chat</h2>
+        </div>
+        <span class="chat-hint">Enter senden</span>
+      </header>
+      <div id="chat-log" class="chat-log" aria-label="Chatverlauf">
+        {{template "chatlog-inner" .}}
+      </div>
+      <form id="chat-form" class="chat-form" ws-send method="post">
+        <input type="hidden" name="type" value="chat">
+        <label class="visually-hidden" for="chat-message">Nachricht</label>
+        <input id="chat-message" name="message" type="text" maxlength="240"
+               autocomplete="off" placeholder="Kurz was sagen …" required>
+        <button class="btn btn-small btn-secondary" type="submit" aria-label="Nachricht senden">↑</button>
+      </form>
+    </section>
+
+    <form id="input-form" class="visually-hidden" ws-send method="post"
+          aria-hidden="true" tabindex="-1">
+      <input type="hidden" name="type" value="input">
+      <input type="hidden" name="action" id="input-action" value="move">
+      <input type="hidden" name="dir" id="input-dir" value="none">
+      <button type="submit" tabindex="-1">senden</button>
+    </form>
+  </div>
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+{{template "foot" .}}

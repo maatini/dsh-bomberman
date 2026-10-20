@@ -1,0 +1,48 @@
+{{template "head" .}}
+<header class="site-header">
+  {{template "brand" .}}
+  <a class="btn btn-ghost btn-small" href="/">← Startseite</a>
+</header>
+
+<main id="main" class="center-stage">
+  <section class="join-card">
+    <p class="eyebrow"><span class="eyebrow-dot"></span> EINLADUNG</p>
+    <div class="join-code-display">
+      <span>Raum</span>
+      <strong>{{.Room.Code}}</strong>
+    </div>
+    <h1>{{.Room.Name}}</h1>
+    <p class="join-subline">{{.Room.PhaseText}} · {{.Room.Players}}/{{.Room.MaxPlayers}} Spieler:innen</p>
+
+    {{if eq .Room.JoinAs "spectator"}}
+    <div class="notice notice-info">
+      <strong>Zuschauer-Modus</strong>
+      {{if eq .Room.Phase "lobby"}}Der Raum ist voll. Du kannst die Lobby beobachten.
+      {{else}}Diese Runde läuft bereits. Du steigst als Zuschauer:in ein.{{end}}
+    </div>
+    {{else}}
+    <div class="notice">
+      <strong>Platz frei</strong>
+      Du wirst als Spieler:in in die Lobby aufgenommen.
+    </div>
+    {{end}}
+
+    <div id="join-msg" class="landing-msg" role="alert" aria-live="polite">
+      {{if .Error}}<div class="form-error">{{.Error}}</div>{{end}}
+    </div>
+
+    <form method="post" action="/room/{{.Room.Code}}/join"
+          hx-post="/room/{{.Room.Code}}/join" hx-target="#join-msg" hx-swap="innerHTML"
+          hx-disabled-elt="find button" class="join-form">
+      <label for="join-player-name">Dein Name</label>
+      <input id="join-player-name" name="name" type="text" minlength="2" maxlength="18"
+             autocomplete="nickname" placeholder="z. B. Ada" required autofocus>
+      <button class="btn btn-primary" type="submit">
+        {{if eq .Room.JoinAs "spectator"}}Als Zuschauer:in beitreten{{else}}Lobby betreten{{end}}
+        <span aria-hidden="true">→</span>
+      </button>
+    </form>
+    <p class="microcopy">Der Einladungslink enthält bewusst nur den Raumcode. Deine Sitzung bleibt tab-spezifisch.</p>
+  </section>
+</main>
+{{template "foot" .}}

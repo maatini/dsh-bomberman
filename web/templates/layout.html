@@ -1,0 +1,37 @@
+{{define "head"}}
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Bomber Grid – ein serverautoritativer Multiplayer-Bomberman-Clone mit Go, HTMX und WebSockets.">
+  <title>{{.Title}}</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script src="/static/vendor/htmx.min.js" defer></script>
+  <script src="/static/vendor/idiomorph-ext.min.js" defer></script>
+  <script src="/static/vendor/htmx-ws.min.js" defer></script>
+  <script src="/static/js/game.js" defer></script>
+  <script src="/static/js/sound.js" defer></script>
+</head>
+<body hx-ext="ws, morph">
+  <a class="skip-link" href="#main">Zum Inhalt springen</a>
+{{end}}
+
+{{define "foot"}}
+  <footer class="site-footer">
+    <span><strong>BOMBER GRID</strong> · serverautoritativ in Go</span>
+    <span class="footer-tech">net/http · gorilla/websocket · HTMX 2 · Idiomorph</span>
+  </footer>
+</body>
+</html>
+{{end}}
+
+{{define "brand"}}
+<a class="brand" href="/" aria-label="Bomber Grid Startseite">
+  <span class="brand-bomb" aria-hidden="true">✦</span>
+  <span>BOMBER<span class="brand-accent">GRID</span></span>
+</a>
+{{end}}

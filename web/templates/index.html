@@ -1,0 +1,102 @@
+{{template "head" .}}
+<header class="site-header landing-header">
+  {{template "brand" .}}
+  <div class="header-badges">
+    <span class="tech-badge">HTMX + WS</span>
+    <span class="tech-badge tech-badge-muted">2–4 Spieler</span>
+  </div>
+</header>
+
+<main id="main" class="landing">
+  <section class="hero">
+    <p class="eyebrow"><span class="eyebrow-dot"></span> ECHTZEIT-ARCADE IM BROWSER</p>
+    <h1 class="hero-title">BOMBER<br><span class="hero-outline">GRID</span></h1>
+    <p class="hero-copy">
+      Ein Raum. Vier Ecken. Drei Leben. Lege Bomben, brich durch die Wand
+      und bleib der letzte Spieler auf dem Feld.
+    </p>
+    <ul class="hero-features" aria-label="Spielmerkmale">
+      <li><span>⌁</span> Server-autoritativ</li>
+      <li><span>⚡</span> 20 Ticks/s</li>
+      <li><span>↻</span> Reconnect per Link</li>
+    </ul>
+  </section>
+
+  <section class="landing-actions" aria-label="Raum betreten">
+    <div id="landing-msg" class="landing-msg" role="alert" aria-live="polite">
+      {{if .Error}}<div class="form-error">{{.Error}}</div>{{end}}
+    </div>
+
+    <article class="action-card action-card-primary">
+      <div class="action-card-head">
+        <span class="step-number">01</span>
+        <div>
+          <h2>Raum eröffnen</h2>
+          <p>Du wirst Host und bekommst einen Einladungslink.</p>
+        </div>
+      </div>
+      <form method="post" action="/lobby/create"
+            hx-post="/lobby/create" hx-target="#landing-msg" hx-swap="innerHTML"
+            hx-disabled-elt="find button">
+        <label for="create-name">Dein Name</label>
+        <input id="create-name" name="name" type="text" value="{{.Name}}"
+               minlength="2" maxlength="18" autocomplete="nickname"
+               placeholder="z. B. Ada" required>
+        <label for="room-name">Raumname <span class="label-optional">optional</span></label>
+        <input id="room-name" name="room_name" type="text" value="{{.RoomName}}"
+               maxlength="32" placeholder="Bombenwerkstatt">
+        <button class="btn btn-primary" type="submit">
+          Raum eröffnen <span aria-hidden="true">→</span>
+        </button>
+      </form>
+    </article>
+
+    <article class="action-card">
+      <div class="action-card-head">
+        <span class="step-number">02</span>
+        <div>
+          <h2>Raum beitreten</h2>
+          <p>Code vom Host oder Einladungslink verwenden.</p>
+        </div>
+      </div>
+      <form method="post" action="/lobby/join"
+            hx-post="/lobby/join" hx-target="#landing-msg" hx-swap="innerHTML"
+            hx-disabled-elt="find button">
+        <label for="join-name">Dein Name</label>
+        <input id="join-name" name="name" type="text" value="{{.Name}}"
+               minlength="2" maxlength="18" autocomplete="nickname"
+               placeholder="z. B. Byte" required>
+        <label for="join-code">Raumcode</label>
+        <input id="join-code" name="code" type="text" value="{{.JoinCode}}"
+               minlength="5" maxlength="5" pattern="[A-Za-z0-9]{5}"
+               autocomplete="off" autocapitalize="characters"
+               spellcheck="false" placeholder="X7K2M" required>
+        <button class="btn btn-secondary" type="submit">
+          Beitreten <span aria-hidden="true">↗</span>
+        </button>
+      </form>
+    </article>
+  </section>
+
+  <section class="how-it-works" aria-labelledby="how-title">
+    <h2 id="how-title">So funktioniert's</h2>
+    <ol class="how-grid">
+      <li>
+        <span class="how-index">A</span>
+        <h3>Lobby teilen</h3>
+        <p>Link in einen zweiten Tab oder an Freund:innen schicken. Jede:r erhält eine eigene Sitzung.</p>
+      </li>
+      <li>
+        <span class="how-index">B</span>
+        <h3>Bomben legen</h3>
+        <p>Bewege dich mit WASD oder Pfeiltasten. Leertaste legt eine Bombe mit Kreuz-Explosion.</p>
+      </li>
+      <li>
+        <span class="how-index">C</span>
+        <h3>Letzter gewinnt</h3>
+        <p>Drei Leben pro Runde, Respawn in der eigenen Ecke. Power-ups geben Reichweite, Bomben und Tempo.</p>
+      </li>
+    </ol>
+  </section>
+</main>
+{{template "foot" .}}
