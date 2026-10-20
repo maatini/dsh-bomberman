@@ -1,0 +1,324 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-labelledby="title desc">
+  <title id="title">Bomber Grid – Spielablauf</title>
+  <desc id="desc">Animiertes Ablaufdiagramm: Lobby, Countdown, Runde mit 20-Hz-Simulation, Sudden Death nach 120 Sekunden, Sieger und Rematch.</desc>
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#16202e" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="spot" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff7a3d" stop-opacity=".22"/>
+      <stop offset="100%" stop-color="#ff7a3d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cardfill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#101a27"/>
+      <stop offset="100%" stop-color="#0b131d"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#41556e"/>
+    </marker>
+  </defs>
+  <style><![CDATA[
+    :root { color-scheme: dark; }
+    * { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    text { fill: #eaf2fb; }
+    .num { font-size: 11px; fill: #5b6b80; letter-spacing: .12em; }
+    .ct { font-size: 17px; font-weight: 800; fill: #f2f7ff; }
+    .kicker { font-size: 8.5px; fill: #5b6b80; letter-spacing: .16em; font-weight: 700; }
+    .body { font-size: 12.5px; fill: #c6d3e2; }
+    .small { font-size: 10.5px; fill: #8595aa; }
+    .tiny { font-size: 8.5px; fill: #5b6b80; }
+    .div { stroke: #1a2534; stroke-width: 1; }
+    .av { font-size: 11px; font-weight: 800; text-anchor: middle; }
+    .ghost { fill: none; stroke: #3a4b61; stroke-dasharray: 3 3; }
+    .ghost-plus { font-size: 14px; fill: #5b6b80; text-anchor: middle; }
+    .chip { fill: #12202e; stroke: #223348; stroke-width: 1; }
+    .chip-text { font-size: 10px; font-weight: 800; letter-spacing: .14em; }
+    .accent { fill: #ff7a3d; }
+    .accent2 { fill: #ffd166; }
+    .ring { fill: none; stroke: #223348; stroke-width: 1.5; stroke-dasharray: 4 5; }
+    .count { font-size: 74px; font-weight: 900; fill: #ffd166; }
+    .n1, .n2, .n3 { opacity: 0; }
+    .n3 { animation: n3 10s infinite; }
+    .n2 { animation: n2 10s infinite; }
+    .n1 { animation: n1 10s infinite; }
+    @keyframes n3 { 0%,14% { opacity: 0; } 16%,20% { opacity: 1; } 22%,100% { opacity: 0; } }
+    @keyframes n2 { 0%,20% { opacity: 0; } 22%,25% { opacity: 1; } 27%,100% { opacity: 0; } }
+    @keyframes n1 { 0%,26% { opacity: 0; } 28%,31% { opacity: 1; } 33%,100% { opacity: 0; } }
+    .card-bg { stroke: none; }
+    .card-frame { fill: none; stroke: #1d2a3a; stroke-width: 1.2; }
+    .halo { opacity: 0; stroke-width: 2; }
+    .h1 { stroke: #ff7a3d; animation: h1 10s infinite; }
+    .h2 { stroke: #ff7a3d; animation: h2 10s infinite; }
+    .h3 { stroke: #ff7a3d; animation: h3 10s infinite; }
+    .h4 { stroke: #ff5a20; animation: h4 10s infinite; }
+    .h5 { stroke: #ffd166; animation: h5 10s infinite; }
+    @keyframes h1 { 0%,13% { opacity: .9; } 16%,94% { opacity: 0; } 97%,100% { opacity: .9; } }
+    @keyframes h2 { 0%,15% { opacity: 0; } 18%,30% { opacity: .9; } 33%,100% { opacity: 0; } }
+    @keyframes h3 { 0%,32% { opacity: 0; } 35%,62% { opacity: .9; } 65%,100% { opacity: 0; } }
+    @keyframes h4 { 0%,64% { opacity: 0; } 67%,78% { opacity: 1; } 81%,100% { opacity: 0; } }
+    @keyframes h5 { 0%,80% { opacity: 0; } 83%,92% { opacity: .9; } 95%,100% { opacity: 0; } }
+    .flow { stroke: #41556e; stroke-width: 1.6; fill: none; stroke-dasharray: 7 7; animation: dash 1.2s linear infinite; }
+    @keyframes dash { to { stroke-dashoffset: -42; } }
+    .board { fill: #081019; stroke: #1c2a3b; }
+    .cell { stroke: #16283a; stroke-width: .7; }
+    .wall { fill: #2c3f56; stroke: #415a78; stroke-width: .8; animation: wall 10s infinite; }
+    @keyframes wall { 0%,62% { fill-opacity: 1; } 70%,94% { fill-opacity: .18; } 97%,100% { fill-opacity: 1; } }
+    @keyframes wallStroke { 0%,62% { stroke-opacity: 1; } 70%,94% { stroke-opacity: .3; } 97%,100% { stroke-opacity: 1; } }
+    .wall { animation: wall 10s infinite, wallStroke 10s infinite; }
+    .brick { fill: #8a5530; stroke: #b97a45; stroke-width: .8; }
+    .brick-broken { animation: brickGone 10s infinite; }
+    @keyframes brickGone { 0%,47% { opacity: 1; } 49%,100% { opacity: 0; } }
+    .bomb-ring { fill: none; stroke: #ff7a3d; stroke-width: 1.2; animation: bombRing .8s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes bombRing { 0% { transform: scale(.7); opacity: .9; } 100% { transform: scale(1.5); opacity: 0; } }
+    .prep { font-size: 13px; fill: #2f4460; letter-spacing: .18em; font-weight: 800; }
+    .sd-ring { fill: none; stroke: #ff5a20; stroke-width: 2; opacity: 0; animation: sdring 10s infinite; }
+    @keyframes sdring { 0%,64% { opacity: 0; } 67%,78% { opacity: .9; } 81%,100% { opacity: 0; } }
+    .boomg { opacity: 0; animation: boomg 10s infinite; }
+    @keyframes boomg { 0%,47% { opacity: 0; } 49%,54% { opacity: 1; } 56%,100% { opacity: 0; } }
+    .boom { fill: #ffb536; }
+    .pup { opacity: 0; animation: pup 10s infinite; }
+    @keyframes pup { 0%,56% { opacity: 0; } 58%,100% { opacity: 1; } }
+    .pup-plus { font-size: 10px; font-weight: 900; fill: #2a1c04; text-anchor: middle; }
+    .bombg { opacity: 0; animation: bombg 10s infinite; }
+    @keyframes bombg { 0%,34% { opacity: 0; } 36%,47% { opacity: 1; } 48%,100% { opacity: 0; } }
+    .bomb { fill: #10161d; stroke: #4a5f78; stroke-width: 1.2; animation: bombPulse .8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes bombPulse { 0%,100% { transform: scale(.9); } 50% { transform: scale(1.08); } }
+    .pb { animation: pb 10s infinite; }
+    @keyframes pb { 0%,46% { opacity: 1; } 48%,56% { opacity: .2; } 60%,100% { opacity: 1; } }
+    .sd-glow { fill: #ff5a20; opacity: 0; animation: sdglow 10s infinite; pointer-events: none; }
+    @keyframes sdglow { 0%,64% { opacity: 0; } 67%,78% { opacity: .16; } 81%,100% { opacity: 0; } }
+    .rain { opacity: 0; animation: rain 10s infinite; }
+    @keyframes rain { 0%,64% { opacity: 0; } 66%,78% { opacity: 1; } 81%,100% { opacity: 0; } }
+    .drop { fill: #ff5a20; animation: fall .9s linear infinite; }
+    @keyframes fall { 0% { transform: translateY(-16px); opacity: 0; } 25% { opacity: 1; } 100% { transform: translateY(12px); opacity: 0; } }
+    .hz-chip { fill: #1b2a1a; stroke: #2f4a2a; }
+    .hz-text { font-size: 9px; fill: #9be564; font-weight: 800; letter-spacing: .08em; }
+    .rail { stroke: #223348; stroke-width: 1; }
+    .dot { fill: #ff7a3d; }
+    .loop { fill: none; stroke: #42c9ff; stroke-width: 1.3; stroke-dasharray: 3 3; }
+    .loop-label { font-size: 8px; fill: #42c9ff; letter-spacing: .12em; }
+    .warn { fill: none; stroke: #ff5a20; stroke-width: 2; }
+    .warn-mark { font-size: 18px; font-weight: 900; fill: #ff5a20; }
+    .sd-time { font-size: 20px; font-weight: 900; fill: #ff8a5c; }
+    .timeline { stroke: #223348; stroke-width: 1.5; }
+    .timeline-dot { fill: #ff5a20; }
+    .star { fill: #ffd166; animation: star 1.6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+    @keyframes star { from { transform: scale(.94); opacity: .82; } to { transform: scale(1.06); opacity: 1; } }
+    .rematch-chip { animation: rematchChip 10s infinite; }
+    @keyframes rematchChip { 0%,90% { stroke: #223348; } 94%,98% { stroke: #ff7a3d; } 100% { stroke: #223348; } }
+    .rematch { stroke: #33445a; stroke-width: 1.6; fill: none; stroke-dasharray: 7 7; animation: rematchPath 10s infinite; }
+    @keyframes rematchPath { 0%,90% { stroke: #33445a; } 94%,98% { stroke: #ff7a3d; } 100% { stroke: #33445a; } }
+    .spot { animation: spotlight 10s ease-in-out infinite; }
+    @keyframes spotlight {
+      0%, 14% { transform: translateX(155px); }
+      18%, 30% { transform: translateX(371px); }
+      34%, 62% { transform: translateX(642px); }
+      66%, 78% { transform: translateX(923px); }
+      82%, 92% { transform: translateX(1137px); }
+      96%, 100% { transform: translateX(155px); }
+    }
+    .live { animation: live 1.6s ease-in-out infinite; }
+    @keyframes live { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; }
+      .n3 { opacity: 1; }
+      .bombg, .pup, .rain { opacity: 1; }
+    }
+]]></style>
+  <rect width="1280" height="640" fill="#070b11"/>
+  <rect width="1280" height="640" fill="url(#grid)" opacity=".55"/>
+  <g class="spot"><ellipse cx="0" cy="305" rx="170" ry="150" fill="url(#spot)"/></g>
+
+  <text x="50" y="64" font-size="12" font-weight="800" letter-spacing=".26em" fill="#ff7a3d">SPIELABLAUF</text>
+  <text x="50" y="110" font-size="40" font-weight="800" fill="#f2f7ff">Vom Raum zum Sieger</text>
+  <text x="50" y="140" font-size="14" fill="#7f8ea3">Lobby → Countdown → Runde → Sudden Death → Sieger → Rematch</text>
+
+  <rect x="1004" y="48" width="226" height="34" rx="17" fill="#0b131d" stroke="#1d2a3a"/>
+  <circle class="live" cx="1022" cy="65" r="4" fill="#9be564"/>
+  <text x="1036" y="69" font-size="10" letter-spacing=".14em" fill="#9be564">LIVE · 20 HZ · SERVER</text>
+
+  <path class="flow" d="M262 305 H282" marker-end="url(#arrow)"/>
+    <path class="flow" d="M458 305 H478" marker-end="url(#arrow)"/>
+    <path class="flow" d="M804 305 H824" marker-end="url(#arrow)"/>
+    <path class="flow" d="M1020 305 H1040" marker-end="url(#arrow)"/>
+
+  <g class="card" transform="translate(50,180)">
+      <rect class="card-bg" width="210" height="250" rx="18" fill="url(#cardfill)"/>
+      <rect class="card-frame" width="210" height="250" rx="18"/>
+      
+      <text class="num" x="18" y="32">01</text>
+      <text class="ct" x="18" y="58">Lobby</text>
+      <line class="div" x1="18" y1="72" x2="192" y2="72"/>
+      <circle cx="40" cy="106" r="13" fill="#ff7a3d"/>
+      <text class="av" x="40" y="111" fill="#1a1008">A</text>
+      <circle cx="68" cy="106" r="13" fill="#42c9ff"/>
+      <text class="av" x="68" y="111" fill="#04121c">B</text>
+      <circle class="ghost" cx="96" cy="106" r="13"/>
+      <text class="ghost-plus" x="96" y="111">+</text>
+      <text class="body" x="18" y="148">2–4 Spieler:innen</text>
+      <text class="small" x="18" y="172">Raumcode · Chat · Bots</text>
+      <text class="small" x="18" y="194">Reconnect &amp; Host-Grace</text>
+      <rect class="chip" x="18" y="208" width="174" height="26" rx="13"/>
+      <text class="chip-text accent2" x="105" y="225" text-anchor="middle">HOST STARTET ▶</text>
+
+    </g>
+    <g class="card" transform="translate(286,180)">
+      <rect class="card-bg" width="170" height="250" rx="18" fill="url(#cardfill)"/>
+      <rect class="card-frame" width="170" height="250" rx="18"/>
+      
+      <text class="num" x="18" y="32">02</text>
+      <text class="ct" x="18" y="58">Countdown</text>
+      <line class="div" x1="18" y1="72" x2="152" y2="72"/>
+      <circle class="ring" cx="85" cy="142" r="46"/>
+      <text class="prep" x="85" y="148" text-anchor="middle">BEREIT?</text>
+      <text class="count n3" x="85" y="163" text-anchor="middle">3</text>
+      <text class="count n2" x="85" y="163" text-anchor="middle">2</text>
+      <text class="count n1" x="85" y="163" text-anchor="middle">1</text>
+      <text class="small" x="85" y="204" text-anchor="middle">3 Sekunden</text>
+      <text class="small" x="85" y="224" text-anchor="middle">Figuren gesperrt</text>
+
+    </g>
+    <g class="card" transform="translate(482,180)">
+      <rect class="card-bg" width="320" height="250" rx="18" fill="url(#cardfill)"/>
+      <rect class="card-frame" width="320" height="250" rx="18"/>
+      
+      <text class="num" x="18" y="32">03</text>
+      <text class="ct" x="18" y="58">Runde</text>
+      <line class="div" x1="18" y1="72" x2="302" y2="72"/>
+      <rect class="hz-chip" x="252" y="42" width="50" height="18" rx="9"/>
+      <text class="hz-text" x="277" y="55" text-anchor="middle">20 Hz</text>
+      
+      <rect class="board" x="16" y="84" width="126" height="126" rx="10"/>
+      <rect class="cell" x="39" y="107" width="20" height="20" fill="#0c1826"/>
+      <rect class="cell" x="59" y="107" width="20" height="20" fill="#0c1826"/>
+      <rect class="cell" x="79" y="107" width="20" height="20" fill="#0c1826"/>
+      <rect class="cell" x="99" y="107" width="20" height="20" fill="#0c1826"/>
+      <rect class="cell" x="39" y="127" width="20" height="20" fill="#0c1826"/>
+      <rect class="cell" x="59" y="127" width="20" height="20" fill="#0c1826"/>
+      <rect class="cell" x="79" y="127" width="20" height="20" fill="#0c1826"/>
+      <rect class="cell" x="39" y="147" width="20" height="20" fill="#0c1826"/>
+      <rect class="cell" x="79" y="147" width="20" height="20" fill="#0c1826"/>
+      <rect class="cell" x="99" y="147" width="20" height="20" fill="#0c1826"/>
+      <rect class="cell" x="39" y="167" width="20" height="20" fill="#0c1826"/>
+      <rect class="cell" x="79" y="167" width="20" height="20" fill="#0c1826"/>
+      <rect class="cell" x="99" y="167" width="20" height="20" fill="#0c1826"/>
+      <rect class="wall" x="19" y="87" width="20" height="20" style="animation-delay:-0.00s"/>
+      <rect class="wall" x="39" y="87" width="20" height="20" style="animation-delay:-0.03s"/>
+      <rect class="wall" x="59" y="87" width="20" height="20" style="animation-delay:-0.06s"/>
+      <rect class="wall" x="79" y="87" width="20" height="20" style="animation-delay:-0.09s"/>
+      <rect class="wall" x="99" y="87" width="20" height="20" style="animation-delay:-0.12s"/>
+      <rect class="wall" x="119" y="87" width="20" height="20" style="animation-delay:-0.15s"/>
+      <rect class="wall" x="19" y="107" width="20" height="20" style="animation-delay:-0.18s"/>
+      <rect class="wall" x="119" y="107" width="20" height="20" style="animation-delay:-0.21s"/>
+      <rect class="wall" x="19" y="127" width="20" height="20" style="animation-delay:-0.24s"/>
+      <rect class="wall" x="119" y="127" width="20" height="20" style="animation-delay:-0.27s"/>
+      <rect class="wall" x="19" y="147" width="20" height="20" style="animation-delay:-0.30s"/>
+      <rect class="wall" x="119" y="147" width="20" height="20" style="animation-delay:-0.33s"/>
+      <rect class="wall" x="19" y="167" width="20" height="20" style="animation-delay:-0.36s"/>
+      <rect class="wall" x="119" y="167" width="20" height="20" style="animation-delay:-0.39s"/>
+      <rect class="wall" x="19" y="187" width="20" height="20" style="animation-delay:-0.42s"/>
+      <rect class="wall" x="39" y="187" width="20" height="20" style="animation-delay:-0.45s"/>
+      <rect class="wall" x="59" y="187" width="20" height="20" style="animation-delay:-0.48s"/>
+      <rect class="wall" x="79" y="187" width="20" height="20" style="animation-delay:-0.51s"/>
+      <rect class="wall" x="99" y="187" width="20" height="20" style="animation-delay:-0.54s"/>
+      <rect class="wall" x="119" y="187" width="20" height="20" style="animation-delay:-0.57s"/>
+      <rect class="brick" x="99" y="127" width="20" height="20"/>
+      <rect class="brick brick-broken" x="59" y="147" width="20" height="20"/>
+      <rect class="brick" x="59" y="167" width="20" height="20"/>
+      <g class="boomg">
+        <rect class="boom" x="39" y="147" width="20" height="20"/>
+        <rect class="boom" x="59" y="147" width="20" height="20"/>
+        <rect class="boom" x="39" y="127" width="20" height="20"/>
+        <rect class="boom" x="39" y="167" width="20" height="20"/>
+      </g>
+      <g class="pup">
+        <circle cx="69" cy="157" r="7" fill="#ffd166"/>
+        <text class="pup-plus" x="69" y="161">+</text>
+      </g>
+      <g class="bombg">
+        <circle class="bomb-ring" cx="49" cy="157" r="11"/>
+        <circle class="bomb" cx="49" cy="157" r="8"/>
+        <circle cx="53" cy="151" r="2" fill="#ff7a3d"/>
+      </g>
+      <g class="pa">
+        <circle cx="109" cy="117" r="7" fill="#ff7a3d"/>
+      </g>
+      <g class="pb">
+        <circle cx="109" cy="177" r="7" fill="#42c9ff"/>
+      </g>
+      <rect class="sd-glow" x="16" y="84" width="126" height="126" rx="10"/>
+      <rect class="sd-ring" x="16" y="84" width="126" height="126" rx="10"/>
+      <g class="rain">
+        <circle class="drop" cx="39" cy="107" r="3.6" style="animation-delay:-0.00s"/>
+        <circle class="drop" cx="59" cy="137" r="3.6" style="animation-delay:-0.11s"/>
+        <circle class="drop" cx="79" cy="97" r="3.6" style="animation-delay:-0.22s"/>
+        <circle class="drop" cx="99" cy="167" r="3.6" style="animation-delay:-0.33s"/>
+        <circle class="drop" cx="119" cy="127" r="3.6" style="animation-delay:-0.44s"/>
+        <circle class="drop" cx="49" cy="177" r="3.6" style="animation-delay:-0.55s"/>
+        <circle class="drop" cx="69" cy="77" r="3.6" style="animation-delay:-0.66s"/>
+        <circle class="drop" cx="89" cy="147" r="3.6" style="animation-delay:-0.77s"/>
+        <circle class="drop" cx="109" cy="87" r="3.6" style="animation-delay:-0.88s"/>
+        <circle class="drop" cx="129" cy="187" r="3.6" style="animation-delay:-0.99s"/>
+      </g>
+
+      <text class="kicker" x="156" y="100">SERVER-SCHLEIFE</text>
+      <line class="rail" x1="158" y1="110" x2="158" y2="176"/>
+      <circle class="dot" cx="158" cy="118" r="3"/>
+      <text class="small" x="168" y="122">Input: WASD</text>
+      <circle class="dot" cx="158" cy="142" r="3"/>
+      <text class="small" x="168" y="146">Tick 20 Hz</text>
+      <circle class="dot" cx="158" cy="166" r="3"/>
+      <text class="small" x="168" y="170">Snapshot</text>
+      <path class="loop" d="M292 132 a14 14 0 1 1 -6 -12"/>
+      <text class="loop-label" x="292" y="160" text-anchor="middle">loop</text>
+      <text class="small accent2" x="156" y="200">HTML 15 Hz · Morph</text>
+      <text class="small" x="18" y="232">3 s Zünder · Ketten · Power-ups</text>
+
+    </g>
+    <g class="card" transform="translate(828,180)">
+      <rect class="card-bg" width="190" height="250" rx="18" fill="url(#cardfill)"/>
+      <rect class="card-frame" width="190" height="250" rx="18"/>
+      
+      <text class="num" x="18" y="32">04</text>
+      <text class="ct" x="18" y="58">Sudden Death</text>
+      <line class="div" x1="18" y1="72" x2="172" y2="72"/>
+      <polygon class="warn" points="32,88 49,119 15,119"/>
+      <text class="warn-mark" x="32" y="113" text-anchor="middle">!</text>
+      <text class="sd-time" x="60" y="112">120 s</text>
+      <text class="small" x="18" y="150">Außenwände fallen</text>
+      <text class="small" x="18" y="172">Bombenregen</text>
+      <text class="small" x="18" y="194">kein Campen mehr</text>
+      <line class="timeline" x1="18" y1="222" x2="172" y2="222"/>
+      <circle class="timeline-dot" cx="166" cy="222" r="4"/>
+      <text class="tiny" x="18" y="240">0 s</text>
+      <text class="tiny" x="172" y="240" text-anchor="end">120 s</text>
+
+    </g>
+    <g class="card" transform="translate(1044,180)">
+      <rect class="card-bg" width="186" height="250" rx="18" fill="url(#cardfill)"/>
+      <rect class="card-frame" width="186" height="250" rx="18"/>
+      
+      <text class="num" x="18" y="32">05</text>
+      <text class="ct" x="18" y="58">Sieger</text>
+      <line class="div" x1="18" y1="72" x2="168" y2="72"/>
+      <path class="star" d="M40 84 l5.2 10.6 11.7 1.7 -8.5 8.2 2 11.6 -10.4 -5.5 -10.4 5.5 2 -11.6 -8.5 -8.2 11.7 -1.7 z"/>
+      <text class="body" x="18" y="146">Letzte:r</text>
+      <text class="body" x="18" y="164">überlebt</text>
+      <text class="small" x="18" y="190">Unentschieden möglich</text>
+      <rect class="chip rematch-chip" x="18" y="206" width="150" height="26" rx="13"/>
+      <text class="chip-text accent" x="93" y="223" text-anchor="middle">REMATCH ↻</text>
+
+    </g>
+
+  <rect class="halo h1" x="49" y="179" width="212" height="252" rx="19" fill="none"/>
+    <rect class="halo h2" x="285" y="179" width="172" height="252" rx="19" fill="none"/>
+    <rect class="halo h3" x="481" y="179" width="322" height="252" rx="19" fill="none"/>
+    <rect class="halo h4" x="827" y="179" width="192" height="252" rx="19" fill="none"/>
+    <rect class="halo h5" x="1043" y="179" width="188" height="252" rx="19" fill="none"/>
+
+  <path class="rematch" d="M1137 432 V500 H155 V434" marker-end="url(#arrow)"/>
+  <rect x="596" y="486" width="88" height="24" rx="12" fill="#0e1622" stroke="#223348"/>
+  <text x="640" y="502" text-anchor="middle" font-size="9.5" font-weight="800" letter-spacing=".2em" fill="#ff7a3d">REMATCH</text>
+
+  <text x="640" y="606" text-anchor="middle" font-size="10.5" letter-spacing=".14em" fill="#5b6b80">20 × 20 GRID · 3 LEBEN · 3 S ZÜNDER · 120 S BIS SUDDEN DEATH · 2–4 SPIELER:INNEN</text>
+</svg>

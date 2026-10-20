@@ -21,6 +21,16 @@ clientseitige Spiel-Logik und keinen Build-Schritt für das Frontend.
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+## Spielablauf
+
+![Animiertes Ablaufdiagramm: Lobby, Countdown, Runde, Sudden Death, Sieger und Rematch](docs/spielablauf.gif)
+
+Ein Durchlauf in fünf Phasen: **Lobby → Countdown → Runde → Sudden Death →
+Sieger → Rematch**. Die Runde läuft serverautoritativ mit 20 Hz, die
+Außenwände fallen nach 120 Sekunden, und nach dem Ergebnis startet der Host
+ein Rematch. Das Diagramm gibt es auch als scharf skalierbares, animiertes
+SVG: [docs/spielablauf.svg](docs/spielablauf.svg).
+
 ## Quickstart mit mise
 
 Voraussetzungen: [mise](https://mise.jdx.dev/) und Netzwerkzugriff für den
@@ -203,6 +213,7 @@ web/static/               CSS, Input-/Sound-JS, vendored HTMX/Idiomorph
 web/assets.go             //go:embed für ein einziges Binary
 Dockerfile                Multi-Stage-Build, statisches Binary, distroless nonroot
 deploy/k8s/               Kustomize-Base + lokales/produktives Overlay
+docs/                     animiertes Ablaufdiagramm (SVG + GIF)
 ```
 
 ### Server-Autorität
