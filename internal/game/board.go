@@ -40,6 +40,15 @@ func newBoard(cfg Config, rng *rand.Rand, spawns []Position) board {
 		}
 	}
 
+	// Even board sizes place a pillar exactly on the bottom-right spawn (and
+	// next to the other corners). Opening the whole spawn zone keeps all four
+	// corners symmetric and guarantees a walkable spawn figure.
+	for p := range clear {
+		if tiles[p.Y][p.X] == TileSolid {
+			tiles[p.Y][p.X] = TileFloor
+		}
+	}
+
 	for y := 1; y < cfg.Height-1; y++ {
 		for x := 1; x < cfg.Width-1; x++ {
 			p := Position{X: x, Y: y}

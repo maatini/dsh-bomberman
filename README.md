@@ -125,7 +125,7 @@ ihn stumm. Die Einstellung wird in `localStorage` gespeichert.
 
 ## Spielregeln
 
-- 15 × 13 Grid, ungerade Koordinaten; feste Außenmauern und Pfeiler.
+- 20 × 20 Grid; feste Außenmauern und Pfeiler, symmetrisch freigeräumte Startecken.
 - Zerstörbare Ziegel, die beim Explodieren verschwinden und Power-ups fallen
   lassen können.
 - Jede:r startet mit **3 Leben**, **1 Bombe**, **Reichweite 2** und normalem
@@ -167,8 +167,21 @@ Die Restzeit bis zum Einsetzen sehen alle Spieler:innen in der Turnierleiste.
 - Ist die Lobby nur wegen Bots voll, macht ein Bot automatisch Platz, sobald
   ein Mensch beitritt.
 - Bots nutzen dieselbe Simulation wie Menschen, kennen aber nur, was auf dem
-  Feld sichtbar ist: Sie fliehen vor Bomben, sprengen Ziegel, sammeln Power-ups
-  und greifen Gegner:innen im Explosionsradius an.
+  Feld sichtbar ist – und planen mehrere Züge im Voraus:
+  - **Gefahrenkarte:** Für jedes Feld wird der früheste Explosionszeitpunkt
+    berechnet, inklusive Kettenreaktionen und der eigenen Bewegungsabklingzeit.
+  - **Pfadpläne:** Statt jeden Tick neu zu zucken, halten Bots eine Route zu
+    einem Ziel und verwerfen sie erst, wenn sie ungültig wird.
+  - **Prioritäten:** Power-ups zuerst, dann Gegner:innen im Umkreis von zwei
+    Feldern, dann Ziegel zum Freisprengen. Gibt es nichts Sinnvolles zu tun,
+    wartet der Bot, statt ziellos umherzulaufen.
+  - **Warten statt Zappeln:** Solange die eigene Bombe läuft, werden nur noch
+    Power-ups angesteuert; Routen führen nie durch Explosionszonen. Unmittelbare
+    Kehrtwenden werden vermieden.
+  - **Flucht:** Ein Bombenplatz wird nur gewählt, wenn danach ein sicheres Feld
+    erreichbar bleibt; Ziele in kommenden Explosionen werden gemieden.
+  - **Fernzünder:** Steht eine gegnerische Figur im Radius einer eigenen Bombe
+    und der Bot selbst nicht, wird sofort gezündet.
 
 ## Architektur
 
@@ -178,7 +191,7 @@ internal/game/            reine Simulation ohne HTTP/HTML-Wissen
   types.go                Konfiguration, Tiles, Snapshots, Validierung
   board.go                deterministische Board-Generierung
   engine.go               Bewegung, Bomben, Explosionen, Leben, Sieger
-  bot.go                  Server-Bots: Gefahrenkarte, Flucht-BFS, Ziele
+  bot.go                  Server-Bots: Gefahrenkarte, Pfadpläne, Ziele
 internal/lobby/           Räume und Lobby-Lebenszyklus
   manager.go              Raum-Codes, Janitor, Maximalanzahl
   room.go                 Host/Join/Start/Rematch, Chat, 20-Hz-Loop
@@ -271,7 +284,8 @@ Abgedeckt sind unter anderem:
 - Explosionen, Kettenreaktionen, Ziegel, Power-ups mit Caps
 - Kick, Fernzünder und Schild inklusive Grenzfällen
 - Sudden Death: Mauerfall, Bombenregen, Restzeit im Snapshot
-- Bots: Bewegung, Bomben, vollständige Runde bis zum Sieger
+- Bots: Pfadplanung, Jagen, Power-up-Routen, Fernzünder, vollständige Runde
+  bis zum Sieger
 - Leben, Respawn, Unverwundbarkeit, Sieger und Forfeit
 - Lobby: Host-Start, Zuschauer, Namen, Chat-Rate-Limit, Host-Grace,
   Disconnect-Forfeit, Bot-Verwaltung

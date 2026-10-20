@@ -215,11 +215,11 @@ type Config struct {
 	MaxRangeCap int
 }
 
-// DefaultConfig returns the tuned arcade defaults for a 15x13 board at 20 Hz.
+// DefaultConfig returns the tuned arcade defaults for a 20x20 board at 20 Hz.
 func DefaultConfig() Config {
 	return Config{
-		Width:             15,
-		Height:            13,
+		Width:             20,
+		Height:            20,
 		Lives:             3,
 		MaxBombs:          1,
 		BombRange:         2,
@@ -417,9 +417,6 @@ func ValidName(name string) (string, error) {
 func (c Config) validate(seeds []PlayerSeed) error {
 	if c.Width < 9 || c.Height < 9 {
 		return fmt.Errorf("board must be at least 9x9, got %dx%d", c.Width, c.Height)
-	}
-	if c.Width%2 == 0 || c.Height%2 == 0 {
-		return errors.New("board dimensions must be odd")
 	}
 	if len(seeds) < 2 || len(seeds) > 4 {
 		return fmt.Errorf("need 2 to 4 players, got %d", len(seeds))

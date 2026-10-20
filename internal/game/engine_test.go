@@ -40,7 +40,7 @@ func TestBoardAndInitialSnapshot(t *testing.T) {
 	cfg := DefaultConfig()
 	e := mustGame(t, 2, cfg)
 	snap := e.Snapshot()
-	if snap.Width != 15 || snap.Height != 13 {
+	if snap.Width != 20 || snap.Height != 20 {
 		t.Fatalf("unexpected dimensions %dx%d", snap.Width, snap.Height)
 	}
 	if len(snap.Players) != 2 {
@@ -58,8 +58,11 @@ func TestBoardAndInitialSnapshot(t *testing.T) {
 	if e.brd.at(Position{X: 0, Y: 0}) != TileSolid {
 		t.Fatal("border should be solid")
 	}
-	if e.brd.at(Position{X: 2, Y: 2}) != TileSolid {
-		t.Fatal("even/even pillar should be solid")
+	if e.brd.at(Position{X: 2, Y: 2}) != TileFloor {
+		t.Fatal("the spawn zone must not keep a pillar on the corner")
+	}
+	if e.brd.at(Position{X: 4, Y: 4}) != TileSolid {
+		t.Fatal("even/even pillar outside the spawn zones should be solid")
 	}
 	// The 3x3 spawn zone is clear of bricks.
 	for y := 0; y <= 2; y++ {
@@ -636,5 +639,167 @@ func TestBotRoundReachesAWinner(t *testing.T) {
 		t.Fatal("expected a winner, got a draw")
 	} else if name == "" {
 		t.Fatal("winner name is empty")
+	}
+}
+
+func TestBotHuntsAndBombsOpponent(t *testing.T) {
+	cfg := testConfig()
+	cfg.CountdownTicks = 0
+	cfg.BrickDensity = 0
+	cfg.PowerUpChance = 0
+	cfg.BombFuseTicks = 60
+	cfg.MatchTicks = 100000
+	e, err := New([]PlayerSeed{
+		{ID: "p1", Name: "Ada"},
+		{ID: "p2", Name: "Bot", IsBot: true},
+	}, cfg, 9)
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.Tick() // round starts immediately
+	bot := e.players["p2"]
+	prey := e.players["p1"]
+	minDist := 1000
+	placed := false
+	for i := 0; i < 400 && !e.Finished(); i++ {
+		e.Tick()
+		if len(e.bombs) > 0 {
+			placed = true
+		}
+		if d := abs(bot.X-prey.X) + abs(bot.Y-prey.Y); d < minDist {
+			minDist = d
+		}
+	}
+	if !placed {
+		t.Fatal("bot never placed a bomb while hunting")
+	}
+	if minDist > 2 {
+		t.Fatalf("bot never closed in on the opponent, closest distance %d", minDist)
+	}
+}
+
+func TestBotPlansToPowerUp(t *testing.T) {
+	cfg := testConfig()
+	cfg.CountdownTicks = 0
+	cfg.BrickDensity = 0
+	cfg.PowerUpChance = 0
+	cfg.MatchTicks = 100000
+	e, err := New([]PlayerSeed{
+		{ID: "p1", Name: "Ada"},
+		{ID: "p2", Name: "Bot", IsBot: true},
+	}, cfg, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.Tick()
+	bot := e.players["p2"]
+	e.powerups[Position{X: 7, Y: 1}] = PowerUpBomb
+	for i := 0; i < 80 && bot.MaxBombs == cfg.MaxBombs; i++ {
+		e.Tick()
+	}
+	if bot.MaxBombs != cfg.MaxBombs+1 {
+		t.Fatalf("bot did not plan a route to the power-up (x=%d, y=%d)", bot.X, bot.Y)
+	}
+}
+
+func TestBotUsesRemoteDetonator(t *testing.T) {
+	cfg := testConfig()
+	cfg.CountdownTicks = 0
+	cfg.BrickDensity = 0
+	cfg.PowerUpChance = 0
+	cfg.BombFuseTicks = 100
+	cfg.MatchTicks = 100000
+	e, err := New([]PlayerSeed{
+		{ID: "p1", Name: "Ada"},
+		{ID: "p2", Name: "Bot", IsBot: true},
+	}, cfg, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.Tick()
+	bot := e.players["p2"]
+	prey := e.players["p1"]
+	bot.Remote = true
+	bot.X, bot.Y = 5, 5
+	prey.X, prey.Y = 5, 10
+	bombPos := Position{X: 5, Y: 9}
+	e.bombs[bombPos] = &Bomb{
+		ID:         "remote-test",
+		Position:   bombPos,
+		OwnerID:    bot.ID,
+		Range:      1,
+		DetonateAt: e.tick + 100,
+	}
+	lives := prey.Lives
+	for i := 0; i < 10 && len(e.bombs) > 0; i++ {
+		e.Tick()
+	}
+	if _, ok := e.bombs[bombPos]; ok {
+		t.Fatal("bot did not detonate its primed bomb")
+	}
+	if prey.Lives >= lives {
+		t.Fatal("remote detonation did not hit the opponent")
+	}
+}
+
+func TestSpawnCornersAreWalkableOnTheSquareBoard(t *testing.T) {
+	cfg := DefaultConfig()
+	e := mustGame(t, 4, cfg)
+	if cfg.Width%2 != 0 || cfg.Height%2 != 0 {
+		t.Fatalf("this test targets an even board, got %dx%d", cfg.Width, cfg.Height)
+	}
+	for _, p := range e.players {
+		if !e.brd.walkable(Position{X: p.X, Y: p.Y}) {
+			t.Fatalf("spawn of %s at %d,%d is not walkable", p.Name, p.X, p.Y)
+		}
+	}
+	// All four spawn zones are opened the same way, including the pillar the
+	// even grid would otherwise put on the bottom-right corner.
+	for _, pos := range []Position{{2, 2}, {cfg.Width - 2, 2}, {2, cfg.Height - 2}, {cfg.Width - 2, cfg.Height - 2}} {
+		if got := e.brd.at(pos); got != TileFloor {
+			t.Fatalf("spawn corner %v = %s, want floor", pos, got)
+		}
+	}
+}
+
+func TestBotMovesWithoutTwitching(t *testing.T) {
+	cfg := testConfig()
+	cfg.CountdownTicks = 0
+	cfg.BrickDensity = 0
+	cfg.PowerUpChance = 0
+	cfg.BombFuseTicks = 60
+	cfg.MatchTicks = 100000
+	e, err := New([]PlayerSeed{
+		{ID: "p1", Name: "Ada"},
+		{ID: "p2", Name: "Bot", IsBot: true},
+	}, cfg, 13)
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.Tick()
+	bot := e.players["p2"]
+	prev := Position{X: bot.X, Y: bot.Y}
+	last := DirNone
+	moves, reversals := 0, 0
+	for i := 0; i < 400; i++ {
+		e.Tick()
+		pos := Position{X: bot.X, Y: bot.Y}
+		if pos == prev {
+			continue
+		}
+		dir := directionBetween(prev, pos)
+		if dir != DirNone && dir == oppositeDirection(last) {
+			reversals++
+		}
+		last = dir
+		moves++
+		prev = pos
+	}
+	if moves < 10 {
+		t.Fatalf("bot barely moved (%d moves)", moves)
+	}
+	t.Logf("moves=%d reversals=%d", moves, reversals)
+	if reversals*4 > moves {
+		t.Fatalf("bot twitches: %d immediate reversals in %d moves", reversals, moves)
 	}
 }
